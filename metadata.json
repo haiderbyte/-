@@ -1,0 +1,6 @@
+{
+  "name": "شذرات دازاي | شمس الغروب ومذكرات العزلة",
+  "description": "تطبيق شذرات واقتباسات الكاتب الياباني أوسامو دازاي بتصميم سوداوي كلاسيكي، مع صانع بطاقات اقتباس، محادثة أدبية مع روح دازاي، ومكتبة شاملة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,10 @@
+{
+  "appId": "com.dazai.sparks",
+  "appName": "شذرات دازاي",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "backgroundColor": "#141416",
+    "allowMixedContent": true
+  }
+}
