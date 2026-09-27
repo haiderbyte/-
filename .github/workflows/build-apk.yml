@@ -5,15 +5,19 @@ on:
     branches:
       - main
       - master
+  pull_request:
+    branches:
+      - main
+      - master
   workflow_dispatch:
     inputs:
-      release_title:
-        description: 'عنوان الإصدار (Release Title)'
+      release_tag:
+        description: 'وسم الإصدار (Release Tag)'
         required: false
-        default: 'إصدار تطبيق أندرويد دازاي'
+        default: 'v1.0.0'
 
 jobs:
-  build:
+  build-apk:
     name: Build Android APK
     runs-on: ubuntu-latest
 
@@ -25,16 +29,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install Node Dependencies
         run: npm install
 
-      - name: Build Web Application
+      - name: Compile Application for Deployment
         run: npm run build
-
-      - name: Sync Capacitor Android
-        run: npx cap sync android
 
       - name: Set up Java JDK 17
         uses: actions/setup-java@v4
@@ -45,18 +46,43 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Make Gradle Wrapper Executable
-        run: chmod +x ./android/gradlew
+      - name: Sync Capacitor Android Project
+        run: |
+          if [ ! -d "android" ] || [ ! -f "android/build.gradle" ]; then
+            npx cap add android || true
+          fi
+          npx cap sync android
+
+      - name: Ensure Gradle Wrapper Executable
+        run: |
+          cd android
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper || true
+          fi
+          if [ -f "gradlew" ]; then
+            chmod +x gradlew
+          fi
 
       - name: Build Debug APK with Gradle
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          if [ -f "gradlew" ]; then
+            ./gradlew assembleDebug --stacktrace
+          else
+            gradle assembleDebug --stacktrace
+          fi
 
-      - name: Rename APK for Easy Identification
+      - name: Prepare APK Output
         run: |
           mkdir -p build-output
-          cp android/app/build/outputs/apk/debug/app-debug.apk build-output/Dazai-Sparks-v1.0.apk
+          APK_PATH=$(find android -name "*.apk" | head -n 1)
+          if [ -n "$APK_PATH" ]; then
+            cp "$APK_PATH" build-output/Dazai-Sparks-v1.0.apk
+            echo "APK ready at build-output/Dazai-Sparks-v1.0.apk"
+          else
+            echo "Error: APK not found"
+            exit 1
+          fi
 
       - name: Upload APK as Workflow Artifact
         uses: actions/upload-artifact@v4

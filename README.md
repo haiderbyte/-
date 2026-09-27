@@ -1,0 +1,130 @@
+# 🍂 شذرات دازاي | شمس الغروب ومذكرات العزلة
+### Dazai Quotes: The Setting Sun & Solitude Chronicles
+
+<p align="center">
+  <img src="public/icons/icon-512x512.png" width="128" height="128" alt="شعار شذرات دازاي" style="border-radius: 24px;" />
+</p>
+
+<p align="center">
+  <b>تطبيق أدبي وتجربة هاتف تفاعلية مستوحاة من فلسفة وروايات الأديب الياباني أوسامو دازاي (Osamu Dazai)</b><br/>
+  <i>"لم تكن شمس الغروب جميلة فقط، بل كانت تذكّرني بأن الجمال لا يبقى."</i>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20PWA-black?style=for-the-badge&logo=android" alt="Platform" />
+  <img src="https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react" alt="React" />
+  <img src="https://img.shields.io/badge/Capacitor-Mobile-1199EE?style=for-the-badge&logo=capacitor" alt="Capacitor" />
+  <img src="https://img.shields.io/badge/Tailwind-CSS%20v4-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind" />
+  <img src="https://img.shields.io/badge/Gemini-AI%20Powered-orange?style=for-the-badge&logo=google" alt="Gemini" />
+</p>
+
+---
+
+## 📖 سيرة الكاتب وعالم التطبيق (About Osamu Dazai)
+
+> **أوسامو دازاي (1909 – 1948)**، أحد أبرز رواد الأدب الياباني الحديث وصاحب الروايات الأكثر تأثيراً مثل **"لم يعد بشراً" (No Longer Human)** و**"شمس الغروب" (The Setting Sun)**.  
+> يتميز أدبه بالصدق الجارح، والاعتراف بهشاشة الروح البشرية، والتمرد على الأقنعة الاجتماعية والنفاق الإنساني. هذا التطبيق ليس مجرد مجمع اقتباسات؛ بل ملاذ للقارئ، ومساحة تأمل هادئة في عتمة الليل.
+
+---
+
+## ✨ المميزات الرئيسية للتطبيق (Core Features)
+
+### 1. 🌅 شذرة اليوم المتجددة (Daily Reflection)
+- شذرة يومية مختارة بعناية تتجدد تلقائياً كل 24 ساعة مع عداد تنازلي.
+- ميزة **"تأملات القارئ"**: مساحة شخصية لتدوين مشاعرك وخواطرك حول الشذرة وحفظها محلياً.
+- أرشيف كامل لتصفح شذرات الأيام والأسابيع السابقة.
+
+### 2. 📚 مكتبة الشذرات الشاملة (Quotes Library)
+- أكثر من 60 شذرة حقيقية وموثقة ومترجمة بعناية، مصنفة حسب:
+  - العزلة والصمت والألم الوجودي.
+  - لم يعد بشراً (أقنعة المجتمع والخوف من الناس).
+  - شمس الغروب وزوال الجمال.
+  - الحب والخذلان والفن.
+  - الشذرات المفضلة والمحفوظة.
+- محرك بحث فوري وسريع للبحث في النصوص والمصادر والوسوم.
+- **نمط التركيز للقراءة (Reading Focus Mode)**: إخفاء عناصر التحكم وشريط التنقل للغوص التام في الكلمات مع إمكانية العودة بلمسة واحدة.
+- نطق صوتي عالي الجودة للشذرات (Text-to-Speech).
+
+### 3. 🎨 استوديو صانع البطاقات الأدبية (Card Studio)
+- محرر مرئي متقدم لتحويل أي شذرة إلى لوحة فنية قابلة للمشاركة على منصات التواصل (Instagram, Stories, X, WhatsApp).
+- قوالب فنية: (المخطوطة العتيقة، سماء الليل الداكنة، النمط البسيط مع الختم القرمزي الياباني).
+- مقاسات متعددة: Story (9:16)، Post (1:1)، و (4:5).
+- تصدير فوري للصورة بصيغة PNG عالية الدقة عبر HTML5 Canvas.
+
+### 4. 🕯️ صالون المحادثة الأدبية مع روح دازاي (AI Literary Salon)
+- شات أدبي ذكي مدعوم بنموذج Google Gemini، مبرمج ليتقمص بدقة شخصية دازاي ولغته الفصحى الرصينة وتأملاته الصادقة.
+- حفظ تاريخ المحادثات وتصديرها.
+
+### 5. 🌧️ أجواء حسية وبصرية (Atmospheric Ambience)
+- مؤثرات بصرية حية: تساقط بتلات أزهار الساكورا بهدوء، أو قطرات المطر العزلاء، أو رذاذ الحبر.
+- مؤثرات صوتية طبيعية: صوت تقليب صفحات الورق القديم، وصوت ريشة الحبر أثناء الكتابة.
+
+---
+
+## 🛠️ البنية التقنية (Tech Stack)
+
+- **الواجهة الأمامية**: [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
+- **التصميم والتنسيق**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **حركات وتأثيرات**: [Motion (Framer Motion)](https://motion.dev/)
+- **الأيقونات**: [Lucide React](https://lucide.dev/)
+- **محول تطبيقات الهاتف**: [Capacitor](https://capacitorjs.com/) (دعم بناء حزمة أندرويد APK)
+- **الذكاء الاصطناعي**: [@google/genai](https://www.npmjs.com/package/@google/genai)
+- **التخزين المحلي**: LocalStorage للعمل بدون إنترنت (Offline-First)
+
+---
+
+## 🚀 تشغيل المشروع محلياً (Quick Start)
+
+### المتطلبات الأساسية
+- تثبيت [Node.js](https://nodejs.org/) (إصدار 20 أو أحدث)
+- تثبيت npm
+
+### خطوات التثبيت والتشغيل:
+
+```bash
+# 1. استنساخ المستودع
+git clone https://github.com/your-username/dazai-quotes.git
+
+# 2. الانتقال إلى مجلد المشروع
+cd dazai-quotes
+
+# 3. تثبيت الاعتماديات
+npm install
+
+# 4. تشغيل خادم التطوير
+npm run dev
+```
+
+التطبيق سيعمل مباشرة على الرابط: `http://localhost:3000`
+
+---
+
+## 📱 بناء ملف أندرويد (Build Android APK)
+
+المشروع مزود بـ **GitHub Actions** يقوم ببناء ملف `APK` تلقائياً عند دفع الكود (Push) إلى GitHub:
+
+1. اذهب إلى تبويب **Actions** في مستودع GitHub الخاص بك.
+2. اختر سير العمل: **Build Android APK**.
+3. اضغط على **Run workflow**.
+4. بعد اكتمال البناء، ستجد ملف الـ APK جاهزاً للتحميل في قسم **Artifacts**.
+
+أو يمكنك البناء محلياً عبر أندرويد ستوديو:
+```bash
+# بناء ملفات الويب
+npm run build
+
+# مزامنة ملفات أندرويد
+npx cap sync android
+
+# فتح المشروع في أندرويد ستوديو
+npx cap open android
+```
+
+---
+
+## 📜 الترخيص (License)
+هذا المشروع مفتوح المصدر ومتاح تحت رخصة [MIT License](LICENSE).
+
+<p align="center">
+  صُنع بكل شغف للأدب وعشاق أوسامو دازاي 🖤
+</p>
