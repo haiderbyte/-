@@ -32,7 +32,7 @@ jobs:
           cache: "npm"
 
       - name: Install Node Dependencies
-        run: npm install
+        run: npm ci --legacy-peer-deps
 
       - name: Compile Application for Deployment
         run: npm run build
