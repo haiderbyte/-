@@ -25,10 +25,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '22'
           cache: "npm"
 
       - name: Install Node Dependencies
@@ -45,7 +45,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-        continue-on-error: true
         with:
           api-level: 33
           build-tools: 33.0.2
@@ -53,7 +52,7 @@ jobs:
             platform-tools
             platforms;android-33
             build-tools;33.0.2
-            cmdline-tools;9.0.1
+            cmdline-tools;latest
 
       - name: Accept Android SDK licenses
         run: |
@@ -61,13 +60,17 @@ jobs:
             SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
           elif [ -x "$ANDROID_SDK_ROOT/cmdline-tools/9.0.1/bin/sdkmanager" ]; then
             SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/9.0.1/bin/sdkmanager"
-          elif [ -x "$ANDROID_SDK_ROOT/cmdline-tools/16.0/bin/sdkmanager" ]; then
-            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/16.0/bin/sdkmanager"
+          elif [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           else
             SDKMANAGER="$(command -v sdkmanager || true)"
           fi
+
           if [ -n "$SDKMANAGER" ]; then
             yes | "$SDKMANAGER" --licenses || true
+          else
+            echo "sdkmanager not found; Android cmdline-tools may not be installed"
+            exit 1
           fi
 
       - name: Sync Capacitor Android Project
