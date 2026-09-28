@@ -529,3 +529,26 @@ export function saveNotificationSettings(settings: NotificationSettings) {
     // Ignore
   }
 }
+
+const LANGUAGE_KEY = 'dazai_app_language';
+
+export function getStoredLanguage(): 'ar' | 'en' | 'ja' {
+  try {
+    const raw = localStorage.getItem(LANGUAGE_KEY);
+    if (raw === 'ar' || raw === 'en' || raw === 'ja') {
+      return raw;
+    }
+  } catch {
+    // Ignore
+  }
+  return 'ar';
+}
+
+export function saveStoredLanguage(lang: 'ar' | 'en' | 'ja') {
+  try {
+    localStorage.setItem(LANGUAGE_KEY, lang);
+  } catch {
+    // Ignore
+  }
+}
+

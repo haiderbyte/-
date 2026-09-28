@@ -34,7 +34,7 @@ jobs:
       - name: Install Node Dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Compile Application for Deployment
+      - name: Compile Web Application
         run: npm run build
 
       - name: Set up Java JDK 17
@@ -42,72 +42,65 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          api-level: 33
-          build-tools: 33.0.2
-          components: |
-            platform-tools
-            platforms;android-33
-            build-tools;33.0.2
-            cmdline-tools;latest
-
-      - name: Accept Android SDK licenses
+      - name: Setup Modern Android SDK Components & Accept Licenses
         run: |
-          if [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
-            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
-          elif [ -x "$ANDROID_SDK_ROOT/cmdline-tools/9.0.1/bin/sdkmanager" ]; then
-            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/9.0.1/bin/sdkmanager"
-          elif [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+          # Set canonical Android SDK paths
+          export ANDROID_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+
+          # Locate sdkmanager (preferring latest cmdline-tools)
+          if [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
             SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          else
-            SDKMANAGER="$(command -v sdkmanager || true)"
+          elif [ -x "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" ]; then
+            SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          elif command -v sdkmanager >/dev/null 2>&1; then
+            SDKMANAGER="$(command -v sdkmanager)"
           fi
 
           if [ -n "$SDKMANAGER" ]; then
+            echo "Configuring Android SDK via: $SDKMANAGER"
+            # Accept all licenses initially
+            yes | "$SDKMANAGER" --licenses || true
+
+            # Install explicit modern components (replaces deprecated legacy 'tools')
+            echo "Installing modern Android SDK components: cmdline-tools;latest, platform-tools, platforms;android-35, build-tools;35.0.0..."
+            "$SDKMANAGER" --install \
+              "cmdline-tools;latest" \
+              "platform-tools" \
+              "platforms;android-35" \
+              "build-tools;35.0.0" || true
+
+            # Accept any newly introduced licenses
             yes | "$SDKMANAGER" --licenses || true
           else
-            echo "sdkmanager not found; Android cmdline-tools may not be installed"
-            exit 1
+            echo "Warning: sdkmanager not found on expected paths, using preinstalled runner SDK"
           fi
 
       - name: Sync Capacitor Android Project
-        run: |
-          if [ ! -d "android" ] || [ ! -f "android/build.gradle" ]; then
-            npx cap add android || true
-          fi
-          npx cap sync android
+        run: npx cap sync android
 
-      - name: Ensure Gradle Wrapper Executable
-        run: |
-          cd android
-          if [ ! -f "gradlew" ]; then
-            gradle wrapper || true
-          fi
-          if [ -f "gradlew" ]; then
-            chmod +x gradlew
-          fi
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x ./android/gradlew
 
       - name: Build Debug APK with Gradle
         run: |
           cd android
-          if [ -f "gradlew" ]; then
-            ./gradlew assembleDebug --stacktrace
-          else
-            gradle assembleDebug --stacktrace
-          fi
+          ./gradlew assembleDebug --stacktrace --no-daemon
 
       - name: Prepare APK Output
         run: |
           mkdir -p build-output
-          APK_PATH=$(find android -name "*.apk" | head -n 1)
+          APK_PATH=$(find android/app/build/outputs/apk/debug -name "*.apk" | head -n 1)
+          if [ -z "$APK_PATH" ]; then
+            APK_PATH=$(find android -name "*.apk" | head -n 1)
+          fi
           if [ -n "$APK_PATH" ]; then
             cp "$APK_PATH" build-output/Dazai-Sparks-v1.0.apk
-            echo "APK ready at build-output/Dazai-Sparks-v1.0.apk"
+            echo "Successfully generated APK: build-output/Dazai-Sparks-v1.0.apk"
           else
-            echo "Error: APK not found"
+            echo "Error: APK file could not be found"
             exit 1
           fi
 

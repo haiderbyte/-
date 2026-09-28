@@ -3,6 +3,7 @@ import {
   AIProviderConfig,
   AIProvider,
   ProviderTestResult,
+  AppLanguage,
 } from '../types';
 import {
   Cpu,
@@ -23,8 +24,11 @@ import {
   Zap,
   Sparkles,
   Check,
+  Languages,
+  Globe,
 } from 'lucide-react';
 import { audioManager } from '../utils/sound';
+import { useLanguage } from '../i18n/LanguageContext';
 import {
   saveAIConfig,
   clearAIKeys,
@@ -80,6 +84,8 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
   const [localSaveNotice, setLocalSaveNotice] = useState<string | null>(null);
   const [smartPasteInput, setSmartPasteInput] = useState('');
   const [smartPasteDetected, setSmartPasteDetected] = useState<string | null>(null);
+
+  const { language, setLanguage, t } = useLanguage();
 
   // Auto-migrate any deprecated model stored in config
   useEffect(() => {
@@ -507,13 +513,13 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-amiri text-2xl font-bold">الإعدادات وتكامل المزودين</h2>
-          <p className="text-xs opacity-60 font-kanji">設定とAIプロバイダー接続</p>
+          <h2 className="font-amiri text-2xl font-bold">{t.settings.title}</h2>
+          <p className="text-xs opacity-60 font-kanji">{t.settings.subtitle}</p>
         </div>
 
         {savedBadge && (
           <span className="text-xs font-amiri text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/30 animate-pulse">
-            تم الحفظ محلياً
+            {t.settings.savedSuccess}
           </span>
         )}
       </div>
@@ -533,6 +539,178 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
           </button>
         </div>
       )}
+
+      {/* Language Selector Section (لغة واجهة التطبيق) */}
+      <div
+        className={`p-4 sm:p-5 rounded-2xl border transition-all ${
+          theme === 'dark'
+            ? 'bg-[#18181D] border-[#2C2C38]'
+            : 'bg-[#FAF4EB] border-[#DECDB7]'
+        }`}
+      >
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5">
+            <div
+              className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                theme === 'dark'
+                  ? 'bg-[#8B3A3A]/20 text-[#E89292]'
+                  : 'bg-[#7A3838]/15 text-[#7A3838]'
+              }`}
+            >
+              <Languages className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-amiri font-bold text-base leading-tight">
+                {t.settings.languageTitle}
+              </h3>
+              <p className="text-[11px] opacity-65 font-sans-ui mt-0.5">
+                {t.settings.languageDesc}
+              </p>
+            </div>
+          </div>
+
+          <div className="text-[10px] font-kanji px-2 py-0.5 rounded-full border border-inherit/25 bg-inherit/10 opacity-70 hidden sm:block">
+            多言語対応 · i18n
+          </div>
+        </div>
+
+        {/* Language Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mt-3">
+          {/* Arabic Option */}
+          <button
+            type="button"
+            onClick={() => {
+              setLanguage('ar');
+              setLocalSaveNotice('تم تحويل لغة الواجهة إلى العربية بنجاح ✓');
+              setTimeout(() => setLocalSaveNotice(null), 3000);
+            }}
+            className={`p-3 rounded-xl border text-right transition-all flex items-center justify-between gap-3 relative ${
+              language === 'ar'
+                ? theme === 'dark'
+                  ? 'border-[#8B3A3A] bg-[#8B3A3A]/25 text-[#FAF6EE] shadow-sm ring-1 ring-[#8B3A3A]/60'
+                  : 'border-[#7A3838] bg-[#7A3838]/15 text-[#7A3838] shadow-sm ring-1 ring-[#7A3838]/50'
+                : theme === 'dark'
+                ? 'border-[#2C2C38] bg-[#1E1E26]/60 hover:bg-[#252532] text-[#C5BAA8] opacity-80 hover:opacity-100'
+                : 'border-[#DECDB7]/70 bg-[#F2E8D8]/50 hover:bg-[#EAE0D0] text-[#4A3B2F] opacity-80 hover:opacity-100'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                className={`w-8 h-8 rounded-lg flex items-center justify-center font-amiri text-base font-bold flex-shrink-0 border ${
+                  language === 'ar'
+                    ? 'border-[#8B3A3A] bg-[#8B3A3A]/40 text-white'
+                    : 'border-inherit/25 bg-inherit/15'
+                }`}
+              >
+                ض
+              </span>
+              <div>
+                <div className="font-amiri font-bold text-sm leading-tight">العربية</div>
+                <div className="text-[10px] opacity-60 font-sans-ui mt-0.5">الأصيلة (RTL)</div>
+              </div>
+            </div>
+
+            {language === 'ar' && (
+              <span className="w-5 h-5 rounded-full bg-[#8B3A3A] text-white flex items-center justify-center flex-shrink-0">
+                <Check className="w-3 h-3" />
+              </span>
+            )}
+          </button>
+
+          {/* English Option */}
+          <button
+            type="button"
+            onClick={() => {
+              setLanguage('en');
+              setLocalSaveNotice('Interface language switched to English successfully ✓');
+              setTimeout(() => setLocalSaveNotice(null), 3000);
+            }}
+            className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-3 relative ${
+              language === 'en'
+                ? theme === 'dark'
+                  ? 'border-[#8B3A3A] bg-[#8B3A3A]/25 text-[#FAF6EE] shadow-sm ring-1 ring-[#8B3A3A]/60'
+                  : 'border-[#7A3838] bg-[#7A3838]/15 text-[#7A3838] shadow-sm ring-1 ring-[#7A3838]/50'
+                : theme === 'dark'
+                ? 'border-[#2C2C38] bg-[#1E1E26]/60 hover:bg-[#252532] text-[#C5BAA8] opacity-80 hover:opacity-100'
+                : 'border-[#DECDB7]/70 bg-[#F2E8D8]/50 hover:bg-[#EAE0D0] text-[#4A3B2F] opacity-80 hover:opacity-100'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                className={`w-8 h-8 rounded-lg flex items-center justify-center font-sans-ui text-xs font-bold flex-shrink-0 border ${
+                  language === 'en'
+                    ? 'border-[#8B3A3A] bg-[#8B3A3A]/40 text-white'
+                    : 'border-inherit/25 bg-inherit/15'
+                }`}
+              >
+                EN
+              </span>
+              <div>
+                <div className="font-sans-ui font-bold text-sm leading-tight">English</div>
+                <div className="text-[10px] opacity-60 font-sans-ui mt-0.5">International (LTR)</div>
+              </div>
+            </div>
+
+            {language === 'en' && (
+              <span className="w-5 h-5 rounded-full bg-[#8B3A3A] text-white flex items-center justify-center flex-shrink-0">
+                <Check className="w-3 h-3" />
+              </span>
+            )}
+          </button>
+
+          {/* Japanese Option */}
+          <button
+            type="button"
+            onClick={() => {
+              setLanguage('ja');
+              setLocalSaveNotice('インターフェース言語を日本語に切り替えました ✓');
+              setTimeout(() => setLocalSaveNotice(null), 3000);
+            }}
+            className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-3 relative ${
+              language === 'ja'
+                ? theme === 'dark'
+                  ? 'border-[#8B3A3A] bg-[#8B3A3A]/25 text-[#FAF6EE] shadow-sm ring-1 ring-[#8B3A3A]/60'
+                  : 'border-[#7A3838] bg-[#7A3838]/15 text-[#7A3838] shadow-sm ring-1 ring-[#7A3838]/50'
+                : theme === 'dark'
+                ? 'border-[#2C2C38] bg-[#1E1E26]/60 hover:bg-[#252532] text-[#C5BAA8] opacity-80 hover:opacity-100'
+                : 'border-[#DECDB7]/70 bg-[#F2E8D8]/50 hover:bg-[#EAE0D0] text-[#4A3B2F] opacity-80 hover:opacity-100'
+            }`}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span
+                className={`w-8 h-8 rounded-lg flex items-center justify-center font-kanji text-sm font-bold flex-shrink-0 border ${
+                  language === 'ja'
+                    ? 'border-[#8B3A3A] bg-[#8B3A3A]/40 text-white'
+                    : 'border-inherit/25 bg-inherit/15'
+                }`}
+              >
+                和
+              </span>
+              <div>
+                <div className="font-kanji font-bold text-sm leading-tight">日本語</div>
+                <div className="text-[10px] opacity-60 font-sans-ui mt-0.5">文学的表現 (LTR)</div>
+              </div>
+            </div>
+
+            {language === 'ja' && (
+              <span className="w-5 h-5 rounded-full bg-[#8B3A3A] text-white flex items-center justify-center flex-shrink-0">
+                <Check className="w-3 h-3" />
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Literary preservation badge */}
+        <div className="mt-3 pt-2.5 border-t border-inherit/15 flex items-center justify-between text-[11px] opacity-70">
+          <span className="flex items-center gap-1.5 font-amiri">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#C46868]"></span>
+            <span>النصوص الشذرية والرؤى الفلسفية محفوظة بلسانها العربي الأصيل كاملاً.</span>
+          </span>
+          <span className="font-kanji text-[10px] opacity-60 hidden md:inline">
+            アラビア語文学テキスト原本保持
+          </span>
+        </div>
+      </div>
 
       {/* 1. Live Provider Health Status Card (فحص المزود النشط) */}
       <div

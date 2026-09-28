@@ -1,4 +1,5 @@
 import express from 'express';
+import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
@@ -504,10 +505,8 @@ app.post('/api/ai/chat', async (req, res) => {
         });
       }
 
-      return res.json({
-        reply: `يا صاحبي، أسمع صدى كلماتك في عتمة هذه الغرفة بطوكيو. إنّ الكلمات أحياناً تعجز عن الإحاطة بما في الوجدان، فاعذر صمتي القصير؛ فما كل شعورٍ يُقال باللسان، وأحياناً يكون الصمت أبلغ مراثي الروح.`,
-        provider: 'gemini',
-        model: selectedModel,
+      return res.status(500).json({
+        error: 'لم يتم استلام رد من النموذج، يرجى التحقق من المفتاح أو المحاولة لاحقاً',
       });
     }
 
@@ -1126,11 +1125,16 @@ app.post('/api/ai/generate-quote', async (req, res) => {
   }
 });
 
+const server = http.createServer(app);
+
 // Setup Vite middlewares in development or serve static build
 if (process.env.NODE_ENV !== 'production') {
   const { createServer: createViteServer } = await import('vite');
   const vite = await createViteServer({
-    server: { middlewareMode: true },
+    server: {
+      middlewareMode: true,
+      hmr: process.env.DISABLE_HMR === 'true' ? false : { server },
+    },
     appType: 'spa',
   });
   app.use(vite.middlewares);
@@ -1141,6 +1145,6 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`Dazai app server running on http://0.0.0.0:${PORT}`);
 });

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">شذرات دازاي</string>
+    <string name="title_activity_main">شذرات دازاي</string>
+    <string name="package_name">com.dazai.sparks</string>
+    <string name="custom_url_scheme">com.dazai.sparks</string>
+</resources>

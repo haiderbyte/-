@@ -1,6 +1,7 @@
 import React from 'react';
 import { BookOpen, Sparkles, MessageSquareQuote, Sliders, Palette } from 'lucide-react';
 import { audioManager } from '../utils/sound';
+import { useLanguage } from '../i18n/LanguageContext';
 
 export type TabId = 'home' | 'library' | 'chat' | 'studio' | 'settings';
 
@@ -19,34 +20,36 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   favoritesCount,
   isHidden = false,
 }) => {
+  const { t } = useLanguage();
+
   const tabs = [
     {
       id: 'home' as TabId,
-      label: 'الرئيسية',
+      label: t.nav.home,
       kanji: 'ホーム',
       icon: Sparkles,
     },
     {
       id: 'library' as TabId,
-      label: 'الشذرات',
+      label: t.nav.library,
       kanji: '断片集',
       icon: BookOpen,
     },
     {
       id: 'chat' as TabId,
-      label: 'روح دازاي',
+      label: t.nav.chat,
       kanji: '対話',
       icon: MessageSquareQuote,
     },
     {
       id: 'studio' as TabId,
-      label: 'البطاقات',
+      label: t.nav.studio,
       kanji: 'カード',
       icon: Palette,
     },
     {
       id: 'settings' as TabId,
-      label: 'الإعدادات',
+      label: t.nav.settings,
       kanji: '設定',
       icon: Sliders,
       badge: favoritesCount > 0 ? favoritesCount : undefined,

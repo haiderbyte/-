@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { audioManager } from '../utils/sound';
 import { isQuotePermanentlySaved } from '../utils/storage';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface QuotesLibraryViewProps {
   quotes: Quote[];
@@ -34,6 +35,7 @@ export const QuotesLibraryView: React.FC<QuotesLibraryViewProps> = ({
   theme,
   initialCategory = 'all',
 }) => {
+  const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<
     CategoryId | 'all' | 'favorites' | 'daily' | 'permanent'
   >(initialCategory);
@@ -87,8 +89,8 @@ export const QuotesLibraryView: React.FC<QuotesLibraryViewProps> = ({
       {/* Header & AI Generator Trigger */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="font-amiri text-2xl font-bold">مكتبة الشذرات والاقتباسات</h2>
-          <p className="text-xs opacity-60 font-kanji">太宰治 文学断片アーカイブ</p>
+          <h2 className="font-amiri text-2xl font-bold">{t.library.title}</h2>
+          <p className="text-xs opacity-60 font-kanji">{t.library.subtitle}</p>
         </div>
 
         <button
@@ -100,7 +102,7 @@ export const QuotesLibraryView: React.FC<QuotesLibraryViewProps> = ({
           }`}
         >
           <Feather className="w-3.5 h-3.5" />
-          <span>توليد شذرة جديدة بالذكاء الاصطناعي</span>
+          <span>{t.library.generateAiQuote}</span>
         </button>
       </div>
 
@@ -117,7 +119,7 @@ export const QuotesLibraryView: React.FC<QuotesLibraryViewProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="ابحث في نصوص دازاي، الروايات، الكانجي، أو الوسوم..."
+          placeholder={t.library.searchPlaceholder}
           className="w-full bg-transparent text-sm font-amiri py-2.5 pr-1 pl-8 outline-none placeholder:opacity-45"
         />
         {searchQuery && (

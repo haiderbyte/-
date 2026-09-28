@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { audioManager } from '../utils/sound';
 import { AtmosphereMode, AtmosphereDensity } from './AtmosphereCanvas';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface NavbarProps {
   theme: 'dark' | 'sepia';
@@ -46,6 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenNotificationModal,
   isNotificationEnabled = false,
 }) => {
+  const { t, language } = useLanguage();
   const [isAtmosphereMenuOpen, setIsAtmosphereMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -80,13 +82,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ? 'border-[#8B3A3A] bg-[#8B3A3A]/10 text-[#C46868] shadow-[0_0_12px_rgba(139,58,58,0.2)]'
                 : 'border-[#7A3838] bg-[#7A3838]/10 text-[#7A3838]'
             }`}
-            title="ختم أوسامو دازاي · 太宰治"
+            title="太宰治 · Osamu Dazai"
           >
             太宰
           </div>
           <div>
             <h1 className="font-amiri text-xl font-bold tracking-wide leading-tight">
-              شذرات دازاي
+              {t.navbar.title}
             </h1>
             <p className="text-[11px] opacity-60 font-kanji flex items-center gap-1.5">
               <span>人間失格</span>

@@ -1,5 +1,7 @@
 export type CategoryId = 'solitude' | 'existence' | 'relationships' | 'faint_hope' | 'letters';
 
+export type AppLanguage = 'ar' | 'en' | 'ja';
+
 export interface CategoryInfo {
   id: CategoryId;
   name: string;
