@@ -18,6 +18,34 @@ export interface DetectedProviderInfo {
   keyField: 'geminiKey' | 'openAiKey' | 'anthropicKey' | 'groqKey' | 'customKey';
 }
 
+/** Direct provider ping for Capacitor builds where the Express API is not bundled. */
+async function directProviderPing(provider: AIProvider, apiKey: string, model: string, customBaseUrl?: string) {
+  if (!apiKey && provider !== 'custom') throw new Error('مفتاح API مطلوب قبل فحص الاتصال.');
+  if (provider === 'groq') {
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${apiKey.trim()}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: model || 'openai/gpt-oss-120b', messages: [{ role: 'user', content: 'Ping' }], max_tokens: 5 }) });
+    const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d?.error?.message || 'مفتاح Groq غير صالح أو النموذج غير متاح.');
+    return { message: 'تم الاتصال بـ Groq بنجاح من التطبيق.', model: model || 'openai/gpt-oss-120b' };
+  }
+  if (provider === 'openai') {
+    const r = await fetch('https://api.openai.com/v1/models', { headers: { Authorization: `Bearer ${apiKey.trim()}` } });
+    const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d?.error?.message || 'مفتاح OpenAI غير صالح.');
+    return { message: 'تم الاتصال بـ OpenAI بنجاح من التطبيق.', model: model || 'gpt-4o-mini' };
+  }
+  if (provider === 'gemini') {
+    const selected = model || 'gemini-2.5-flash';
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selected}:generateContent?key=${encodeURIComponent(apiKey.trim())}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: 'Reply with one word: connected' }] }] }) });
+    const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d?.error?.message || 'مفتاح Gemini غير صالح أو النموذج غير متاح.');
+    return { message: 'تم الاتصال بـ Gemini بنجاح من التطبيق.', model: selected };
+  }
+  if (provider === 'custom') {
+    if (!customBaseUrl) throw new Error('عنوان المزود المخصص مطلوب.');
+    const r = await fetch(`${customBaseUrl.replace(/\/$/, '')}/models`, { headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {} });
+    if (!r.ok) throw new Error(`فشل الاتصال بالمزود المخصص (${r.status}).`);
+    return { message: 'تم الاتصال بالمزود المخصص بنجاح من التطبيق.', model: model || 'default' };
+  }
+  throw new Error('الاتصال المباشر بهذا المزود غير مدعوم.');
+}
+
 /**
  * Automatically inspects the raw text of an API key to identify
  * which AI provider it belongs to (e.g. gsk_ for Groq, AIza for Gemini, etc.)
@@ -169,43 +197,8 @@ export async function validateProvider(
   }
 
   try {
-    const response = await fetch('/api/ai/test-provider', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        provider,
-        apiKey,
-        model,
-        customBaseUrl,
-      }),
-    });
-
-    const data = await response.json().catch(() => ({}));
-    const latencyMs = typeof data.latencyMs === 'number' ? data.latencyMs : (Date.now() - startTime);
-
-    if (response.ok && data.success) {
-      return {
-        success: true,
-        testedAt: Date.now(),
-        status: 'success',
-        message: data.message || `المزود (${provider}) متصل ومفتاح الـ API صالح ويعمل بنجاح.`,
-        latencyMs,
-        provider,
-        model: data.model || model,
-      };
-    } else {
-      return {
-        success: false,
-        testedAt: Date.now(),
-        status: 'error',
-        message: data.error || `تعذر التحقق من مفتاح المزود (${provider}). يرجى التأكد من صحة المفتاح.`,
-        latencyMs,
-        provider,
-        model,
-      };
-    }
+    const direct = await directProviderPing(provider, apiKey, model, customBaseUrl);
+    return { success: true, testedAt: Date.now(), status: 'success', message: direct.message, latencyMs: Date.now() - startTime, provider, model: direct.model };
   } catch (err: any) {
     return {
       success: false,
