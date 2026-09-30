@@ -24,6 +24,19 @@ allprojects {
     }
 }
 
+// GitHub Actions builds with JDK 17; override Capacitor's Java 21 default
+// so the project remains buildable without requiring workflow permissions.
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android.compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
+        }
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
