@@ -42,7 +42,7 @@ import {
   saveProviderStatus,
   ProviderStatusMap,
 } from '../utils/storage';
-import { validateProvider, detectProviderFromKey } from '../utils/ai';
+import { validateProvider, detectProviderFromKey, discoverAvailableModels } from '../utils/ai';
 import {
   isAutoDailyQuoteEnabled,
   setAutoDailyQuoteEnabled,
@@ -76,6 +76,8 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
     getProviderStatuses()
   );
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
+  const [availableModels, setAvailableModels] = useState<Record<string, string[]>>({});
+  const [modelsChecking, setModelsChecking] = useState(false);
   const [autoDailyEnabled, setAutoDailyEnabled] = useState<boolean>(() => isAutoDailyQuoteEnabled());
   const [dailyHistoryCount, setDailyHistoryCount] = useState<number>(() => getDailyQuotesHistory().length);
   const [notificationSettings, setNotificationSettings] =
@@ -275,7 +277,18 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
     }
 
     try {
-      const result = await validateProvider(activeConfig, targetProvider);
+      const keyForProvider = targetProvider === 'gemini' ? activeConfig.geminiKey : targetProvider === 'openai' ? activeConfig.openAiKey : targetProvider === 'anthropic' ? activeConfig.anthropicKey : targetProvider === 'groq' ? (activeConfig.groqKey || activeConfig.customKey) : activeConfig.customKey;
+      setModelsChecking(true);
+      const discovered = await discoverAvailableModels(targetProvider, keyForProvider || '', targetProvider === 'custom' ? activeConfig.customBaseUrl : undefined);
+      if (discovered.length) {
+        setAvailableModels((prev) => ({ ...prev, [targetProvider]: discovered }));
+        if (!discovered.includes(activeConfig.selectedModel)) {
+          const nextConfig = { ...activeConfig, selectedModel: discovered[0] };
+          onChangeConfig(nextConfig);
+          saveAIConfig(nextConfig);
+        }
+      }
+      const result = await validateProvider({ ...activeConfig, selectedModel: discovered[0] || activeConfig.selectedModel }, targetProvider);
 
       const statusEntry = {
         status: result.status,
@@ -321,6 +334,7 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
         saveLastTestResult(errorResult);
       }
     } finally {
+      setModelsChecking(false);
       setTestingProvider(null);
     }
   };
@@ -500,6 +514,11 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
       },
     ],
   };
+
+  const activeDiscoveredModels = availableModels[config.provider] || [];
+  const activeModelItems: ProviderModelItem[] = activeDiscoveredModels.length
+    ? activeDiscoveredModels.map((id) => ({ id, label: id, desc: 'نموذج مكتشف ومتاح فعليًا في حسابك', speed: 'فحص مباشر' }))
+    : (providerModels[config.provider] || []);
 
   const providerList: { id: AIProvider; name: string; sub: string }[] = [
     { id: 'gemini', name: 'Google Gemini', sub: 'مدمج / مخصص' },
@@ -1154,10 +1173,10 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-amiri font-bold block opacity-90">
-                النماذج العاملة المعتمدة ({providerModels[config.provider]?.length || 0} نماذج نشطة ومحدثة):
+                النماذج العاملة في حسابك ({activeModelItems.length} نماذج):
               </label>
               <span className="text-[10px] text-emerald-400 font-sans-ui flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                <Check className="w-2.5 h-2.5" /> تم التحقق من عمل كافة النماذج
+                <Check className="w-2.5 h-2.5" /> {modelsChecking ? 'جاري فحص نماذج حسابك...' : activeDiscoveredModels.length ? 'نماذج حسابك المتاحة' : 'اضغط فحص لاكتشاف نماذج حسابك'}
               </span>
             </div>
 
@@ -1170,7 +1189,7 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
               }}
               className="w-full text-xs font-sans-ui px-3 py-2.5 rounded-xl border border-inherit/20 bg-black/10 outline-none focus:border-[#C46868] transition-colors cursor-pointer mb-3"
             >
-              {(providerModels[config.provider] || []).map((m) => (
+              {activeModelItems.map((m) => (
                 <option
                   key={m.id}
                   value={m.id}
@@ -1183,7 +1202,7 @@ export const AIProviderSettings: React.FC<AIProviderSettingsProps> = ({
 
             {/* Interactive Model Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {(providerModels[config.provider] || []).map((m) => {
+              {activeModelItems.map((m) => {
                 const isModelActive = config.selectedModel === m.id;
                 return (
                   <div

@@ -19,6 +19,32 @@ export interface DetectedProviderInfo {
 }
 
 /** Direct provider ping for Capacitor builds where the Express API is not bundled. */
+export async function discoverAvailableModels(provider: AIProvider, apiKey: string, customBaseUrl?: string): Promise<string[]> {
+  if (provider === 'groq' || provider === 'openai') {
+    const url = provider === 'groq' ? 'https://api.groq.com/openai/v1/models' : 'https://api.openai.com/v1/models';
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${apiKey.trim()}` } });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d?.error?.message || 'تعذر جلب نماذج الحساب.');
+    const ids = Array.isArray(d?.data) ? d.data.map((m: any) => m.id).filter(Boolean) : [];
+    return ids.filter((id: string) => provider === 'groq' || /^(gpt|o[1-9]|chatgpt)/i.test(id));
+  }
+  if (provider === 'gemini') {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey.trim())}`);
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d?.error?.message || 'تعذر جلب نماذج Gemini المتاحة.');
+    return (d.models || []).filter((m: any) => (m.supportedGenerationMethods || []).includes('generateContent')).map((m: any) => String(m.name).replace(/^models\//, '')).filter((id: string) => /gemini/i.test(id));
+  }
+  if (provider === 'custom') {
+    if (!customBaseUrl) throw new Error('عنوان المزود المخصص مطلوب.');
+    const r = await fetch(`${customBaseUrl.replace(/\/$/, '')}/models`, { headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {} });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(`فشل جلب نماذج المزود المخصص (${r.status}).`);
+    return Array.isArray(d?.data) ? d.data.map((m: any) => m.id).filter(Boolean) : [];
+  }
+  // Anthropic does not expose a public model-list endpoint; probe maintained IDs.
+  return ['claude-3-5-haiku-20241022', 'claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'];
+}
+
 async function directProviderPing(provider: AIProvider, apiKey: string, model: string, customBaseUrl?: string) {
   if (!apiKey && provider !== 'custom') throw new Error('مفتاح API مطلوب قبل فحص الاتصال.');
   if (provider === 'groq') {
@@ -200,11 +226,26 @@ export async function validateProvider(
     const direct = await directProviderPing(provider, apiKey, model, customBaseUrl);
     return { success: true, testedAt: Date.now(), status: 'success', message: direct.message, latencyMs: Date.now() - startTime, provider, model: direct.model };
   } catch (err: any) {
+    // If the saved model is unavailable, discover the account models and try a few
+    // candidates automatically so one stale model cannot break the whole app.
+    try {
+      const discovered = await discoverAvailableModels(provider, apiKey, customBaseUrl);
+      for (const candidate of discovered.slice(0, 8)) {
+        try {
+          const direct = await directProviderPing(provider, apiKey, candidate, customBaseUrl);
+          return { success: true, testedAt: Date.now(), status: 'success', message: `${direct.message} تم اختيار النموذج العامل تلقائيًا.`, latencyMs: Date.now() - startTime, provider, model: candidate };
+        } catch {
+          // Try the next account-authorized model.
+        }
+      }
+    } catch {
+      // Keep the original, more useful provider error below.
+    }
     return {
       success: false,
       testedAt: Date.now(),
       status: 'error',
-      message: err.message || `انقطع الاتصال بخادم الفحص أثناء إرسال Ping للمزود (${provider}).`,
+      message: err.message || `لم يعمل أي نموذج متاح في حساب المزود (${provider}).`,
       latencyMs: Date.now() - startTime,
       provider,
       model,
