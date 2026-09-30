@@ -6,6 +6,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
+    // Capacitor serves the app from its bundled WebView origin; relative
+    // asset URLs ensure JS/CSS load correctly on Android as well as web.
+    base: './',
     plugins: [
       react(),
       tailwindcss(),
