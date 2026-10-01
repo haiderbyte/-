@@ -114,7 +114,18 @@ class NotificationManager {
     // 1. If running as native Android/iOS APK via Capacitor
     if (Capacitor.isNativePlatform()) {
       try {
-        // Cancel existing notification with id 101 first
+        // Android 8+ drops notifications sent to a missing/low-importance channel.
+        await LocalNotifications.createChannel({
+          id: 'dazai_daily',
+          name: 'شذرة اليوم',
+          description: 'التنبيه اليومي لشذرات دازاي',
+          importance: 4,
+          visibility: 1,
+          vibration: true,
+          lights: true,
+          lightColor: '#C46868',
+        });
+        // Cancel the previous repeating alarm before replacing its time/content.
         await LocalNotifications.cancel({ notifications: [{ id: 101 }] });
 
         await LocalNotifications.schedule({
@@ -131,6 +142,7 @@ class NotificationManager {
                 repeats: true,
                 allowWhileIdle: true,
               },
+              channelId: 'dazai_daily',
               sound: 'res_bell',
               smallIcon: 'ic_launcher',
               extra: {
@@ -188,6 +200,16 @@ class NotificationManager {
     // Native Capacitor notification
     if (Capacitor.isNativePlatform()) {
       try {
+        await LocalNotifications.createChannel({
+          id: 'dazai_daily',
+          name: 'شذرة اليوم',
+          description: 'التنبيه اليومي لشذرات دازاي',
+          importance: 4,
+          visibility: 1,
+          vibration: true,
+          lights: true,
+          lightColor: '#C46868',
+        });
         await LocalNotifications.schedule({
           notifications: [
             {
@@ -195,6 +217,7 @@ class NotificationManager {
               title: '🍂 تجربة التنبيه · شذرات أوسامو دازاي',
               body: `«${targetQuote.textAr.slice(0, 120)}»\n— ${targetQuote.source}`,
               schedule: { at: new Date(Date.now() + 1000) },
+              channelId: 'dazai_daily',
               sound: 'res_bell',
               smallIcon: 'ic_launcher',
             },
