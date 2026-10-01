@@ -144,7 +144,7 @@ class NotificationManager {
               },
               channelId: 'dazai_daily',
               sound: 'res_bell',
-              smallIcon: 'ic_launcher',
+              smallIcon: 'ic_launcher_foreground',
               extra: {
                 quoteId: targetQuote.id,
                 source: targetQuote.source,
@@ -219,7 +219,7 @@ class NotificationManager {
               schedule: { at: new Date(Date.now() + 1000) },
               channelId: 'dazai_daily',
               sound: 'res_bell',
-              smallIcon: 'ic_launcher',
+              smallIcon: 'ic_launcher_foreground',
             },
           ],
         });
