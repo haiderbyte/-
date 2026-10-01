@@ -1,3 +1,4 @@
+import { directGenerateQuote } from '../utils/aiClient';
 import React, { useState } from 'react';
 import { Quote, AIProviderConfig } from '../types';
 import {
@@ -106,37 +107,19 @@ export const AIGenerateQuoteModal: React.FC<AIGenerateQuoteModalProps> = ({
     setIsPermanentlySaved(false);
 
     try {
-      const res = await fetch('/api/ai/generate-quote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic: finalTopic,
-          provider: aiConfig.provider,
-          apiKey:
-            aiConfig.provider === 'gemini'
-              ? (aiConfig.geminiKey?.trim() || undefined)
-              : aiConfig.provider === 'openai'
-              ? aiConfig.openAiKey?.trim()
-              : aiConfig.provider === 'anthropic'
-              ? aiConfig.anthropicKey?.trim()
-              : aiConfig.provider === 'groq'
-              ? (aiConfig.groqKey || aiConfig.customKey)?.trim()
-              : aiConfig.customKey?.trim(),
-          model: aiConfig.selectedModel,
-          customBaseUrl: aiConfig.customBaseUrl,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error('فشل توليد الشذرة الأدبية.');
-      }
-
-      const data = await res.json();
+      const data = { quote: await directGenerateQuote(aiConfig, finalTopic) };
       if (data.quote) {
         audioManager.playSingingBowl();
         const cleanedQuote: Quote = {
           ...data.quote,
-          textAr: cleanQuoteText(data.quote.textAr),
+          id: data.quote.id || `ai-${Date.now()}`,
+          textJp: data.quote.textJp || '',
+          source: data.quote.source || 'مستوحى من أدب دازاي',
+          chapter: data.quote.chapter || 'شذرة أصلية',
+          category: data.quote.category || 'solitude',
+          year: data.quote.year || new Date().getFullYear(),
+          readingTimeSec: data.quote.readingTimeSec || 15,
+          textAr: cleanQuoteText(data.quote.textAr || ''),
           reflection: cleanQuoteText(data.quote.reflection || ''),
           tags: ['توليد أدبي', data.quote.source || 'أوسامو دازاي', 'أدب ياباني'],
         };

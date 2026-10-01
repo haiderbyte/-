@@ -1,5 +1,6 @@
 import { Quote, DailyAIQuoteRecord, AIProviderConfig, CategoryId } from '../types';
 import { saveCustomQuote } from './storage';
+import { directGenerateQuote } from './aiClient';
 import {
   ALL_DAZAI_THEMES,
   getRandomDazaiTheme,
@@ -407,26 +408,20 @@ export async function fetchOrGenerateDailyQuote(
       : aiConfig.customKey?.trim();
 
   try {
-    const res = await fetch('/api/ai/generate-quote', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        topic: cleanTopic,
-        provider: aiConfig.provider,
-        apiKey,
-        model: aiConfig.selectedModel,
-        customBaseUrl: aiConfig.customBaseUrl,
-      }),
-    });
+    const data = { quote: await directGenerateQuote(aiConfig, cleanTopic) };
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.quote) {
+    if (data && data.quote) {
         const rawQuote = data.quote;
         const enrichedQuote: Quote = {
           ...rawQuote,
           id: `daily-ai-${todayKey}-${Date.now()}`,
-          textAr: cleanQuoteText(rawQuote.textAr),
+          textJp: rawQuote.textJp || '',
+          source: rawQuote.source || 'مستوحى من أدب دازاي',
+          chapter: rawQuote.chapter || 'شذرة أصلية',
+          category: rawQuote.category || 'solitude',
+          year: rawQuote.year || new Date().getFullYear(),
+          readingTimeSec: rawQuote.readingTimeSec || 15,
+          textAr: cleanQuoteText(rawQuote.textAr || ''),
           reflection: cleanQuoteText(rawQuote.reflection || ''),
           isDailyFeatured: true,
           isAiGenerated: true,
@@ -453,7 +448,6 @@ export async function fetchOrGenerateDailyQuote(
         saveDailyQuoteRecord(newRecord);
         return { record: newRecord, isNew: true };
       }
-    }
   } catch (err) {
     console.warn('Daily AI quote network fetch fallback:', err);
   }

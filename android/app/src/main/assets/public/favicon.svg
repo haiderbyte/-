@@ -1,5 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <rect width="100" height="100" rx="22" fill="#141416"/>
-  <circle cx="50" cy="50" r="38" fill="#8B3A3A" stroke="#E2D9C8" stroke-width="2"/>
-  <text x="50" y="58" font-family="'Noto Serif JP', serif" font-size="36" font-weight="bold" fill="#FAF6EE" text-anchor="middle" dominant-baseline="middle">太宰</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <!-- Deep obsidian & ink wash background gradient -->
+    <radialGradient id="inkBg" cx="50%" cy="50%" r="55%">
+      <stop offset="0%" stop-color="#1F1F28"/>
+      <stop offset="65%" stop-color="#141418"/>
+      <stop offset="100%" stop-color="#0A0A0D"/>
+    </radialGradient>
+
+    <!-- Classical Japanese Crimson Setting Sun (شمس الغروب) -->
+    <radialGradient id="settingSun" cx="48%" cy="45%" r="52%">
+      <stop offset="0%" stop-color="#E25858"/>
+      <stop offset="45%" stop-color="#B23535"/>
+      <stop offset="85%" stop-color="#781D1D"/>
+      <stop offset="100%" stop-color="#4E1212"/>
+    </radialGradient>
+
+    <!-- Golden Hanko Wax Border Accent -->
+    <linearGradient id="goldAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5D3B3"/>
+      <stop offset="50%" stop-color="#CBB28A"/>
+      <stop offset="100%" stop-color="#9E825A"/>
+    </linearGradient>
+
+    <!-- Atmospheric drop glow -->
+    <filter id="crimsonGlow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#B23535" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Base rounded dark obsidian tile -->
+  <rect width="128" height="128" rx="30" fill="url(#inkBg)"/>
+  <rect x="2" y="2" width="124" height="124" rx="28" fill="none" stroke="#2B2B38" stroke-width="1.5"/>
+
+  <!-- Delicate golden concentric aura ring -->
+  <circle cx="64" cy="64" r="50" fill="none" stroke="url(#goldAccent)" stroke-width="0.75" stroke-opacity="0.3"/>
+  <circle cx="64" cy="64" r="46" fill="none" stroke="#8B3A3A" stroke-width="1" stroke-dasharray="2 3" stroke-opacity="0.4"/>
+
+  <!-- Classical Japanese Setting Sun (شمس الغروب اليابانية الكلاسيكية) -->
+  <circle cx="64" cy="62" r="38" fill="url(#settingSun)" filter="url(#crimsonGlow)"/>
+
+  <!-- Sumi-e Japanese Ink Wash lower horizon arc -->
+  <path d="M 28 76 Q 64 88 100 76 Q 84 94 64 96 Q 44 94 28 76 Z" fill="#0A0A0D" opacity="0.85"/>
+
+  <!-- Classical Kanji for Dazai (太宰) inside the setting sun seal -->
+  <text x="64" y="69" font-family="'Noto Serif JP', 'Cinzel', serif" font-size="33" font-weight="900" fill="#FAF6EE" text-anchor="middle" dominant-baseline="middle" letter-spacing="-1">太宰</text>
+
+  <!-- Golden ink drop accent -->
+  <circle cx="94" cy="34" r="3" fill="url(#goldAccent)" opacity="0.85"/>
+  <circle cx="98" cy="42" r="1.5" fill="#E25858" opacity="0.7"/>
 </svg>

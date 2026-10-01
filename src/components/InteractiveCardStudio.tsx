@@ -163,10 +163,10 @@ export const InteractiveCardStudio: React.FC<InteractiveCardStudioProps> = ({
   };
 
   // Direct PNG Download
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!currentBlob) return;
     audioManager.playSingingBowl();
-    downloadBlobAsFile(
+    await downloadBlobAsFile(
       currentBlob,
       `dazai-card-${effectiveQuote.id}-${config.aspectRatio}.png`
     );
@@ -183,8 +183,8 @@ export const InteractiveCardStudio: React.FC<InteractiveCardStudioProps> = ({
       setCopiedImage(true);
       setTimeout(() => setCopiedImage(false), 2500);
     } else {
-      // If browser blocks image clipboard, fallback to download
-      handleDownload();
+      // If the OS blocks image clipboard, save the real PNG file instead.
+      await handleDownload();
     }
   };
 

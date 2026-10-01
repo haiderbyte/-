@@ -32,6 +32,7 @@ import {
   clearAllChatSessions,
 } from '../utils/storage';
 import { validateProvider } from '../utils/ai';
+import { directChat } from '../utils/aiClient';
 import { ChatHistoryModal } from './ChatHistoryModal';
 import { useLanguage } from '../i18n/LanguageContext';
 
@@ -220,36 +221,8 @@ export const AIChatView: React.FC<AIChatViewProps> = ({
     setSessions(updatedSessions);
 
     try {
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: text,
-          persona: selectedPersona,
-          history: newMessages.slice(-6),
-          provider: aiConfig.provider,
-          apiKey:
-            aiConfig.provider === 'gemini'
-              ? (aiConfig.geminiKey?.trim() || undefined)
-              : aiConfig.provider === 'openai'
-              ? aiConfig.openAiKey?.trim()
-              : aiConfig.provider === 'anthropic'
-              ? aiConfig.anthropicKey?.trim()
-              : aiConfig.provider === 'groq'
-              ? (aiConfig.groqKey || aiConfig.customKey)?.trim()
-              : aiConfig.customKey?.trim(),
-          model: aiConfig.selectedModel,
-          customBaseUrl: aiConfig.customBaseUrl,
-          temperature: aiConfig.temperature,
-        }),
-      });
+      const data = await directChat(aiConfig, text, selectedPersona, newMessages.slice(-7, -1));
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || 'فشل الاتصال بالخادم الأدبي');
-      }
-
-      const data = await response.json();
       const assistantMessage: ChatMessage = {
         id: `asst-${Date.now()}`,
         role: 'assistant',

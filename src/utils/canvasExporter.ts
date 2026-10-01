@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { CardExportConfig, Quote } from '../types';
 
 // Helper to wrap text nicely on canvas with proper Arabic word handling
@@ -372,6 +375,15 @@ export async function generateQuoteCardBlob(
 /**
  * Native Device Share helper (mimicking expo-sharing for web & mobile)
  */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(String(reader.result).split(',')[1] || '');
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 export async function shareQuoteCard(
   quote: Quote,
   blob: Blob
@@ -380,38 +392,33 @@ export async function shareQuoteCard(
   const shareTitle = `شذرة أوسامو دازاي: ${quote.source}`;
   const shareText = `« ${quote.textAr} »\n\n— ${quote.source} (${quote.chapter})\nأوسامو دازاي · 太宰治`;
 
-  // 1. Try native file sharing via Web Share API level 2 (mobile browsers, iOS Safari, Android Chrome)
+  // Capacitor WebView does not reliably expose navigator.share; write a real
+  // native cache file first, then invoke Android's share sheet.
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const data = await blobToBase64(blob);
+      const saved = await Filesystem.writeFile({ path: fileName, data, directory: Directory.Cache, recursive: true });
+      await Share.share({ title: shareTitle, text: shareText, files: [saved.uri], dialogTitle: 'مشاركة شذرة دازاي' });
+      return { success: true, method: 'native-file' };
+    } catch (err) {
+      console.warn('Native image share failed, falling back:', err);
+    }
+  }
+
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
       const file = new File([blob], fileName, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: shareTitle,
-          text: shareText,
-          files: [file],
-        });
+        await navigator.share({ title: shareTitle, text: shareText, files: [file] });
         return { success: true, method: 'native-file' };
       }
-    } catch (err: any) {
-      if (err.name === 'AbortError') {
-        return { success: true, method: 'native-file' }; // User dismissed dialog
-      }
-    }
-
-    // 2. Fallback to native text share if file sharing is restricted by OS
-    try {
-      await navigator.share({
-        title: shareTitle,
-        text: shareText,
-      });
+      await navigator.share({ title: shareTitle, text: shareText });
       return { success: true, method: 'native-text' };
-    } catch {
-      // Proceed to direct download
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return { success: true, method: 'native-file' };
     }
   }
-
-  // 3. Fallback: Trigger instant image download
-  downloadBlobAsFile(blob, fileName);
+  await downloadBlobAsFile(blob, fileName);
   return { success: true, method: 'download' };
 }
 
@@ -439,7 +446,12 @@ export async function copyImageToClipboard(blob: Blob): Promise<boolean> {
 /**
  * Helper to download Blob as file
  */
-export function downloadBlobAsFile(blob: Blob, fileName: string) {
+export async function downloadBlobAsFile(blob: Blob, fileName: string): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    const data = await blobToBase64(blob);
+    await Filesystem.writeFile({ path: fileName, data, directory: Directory.Documents, recursive: true });
+    return;
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -447,5 +459,5 @@ export function downloadBlobAsFile(blob: Blob, fileName: string) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
